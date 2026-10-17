@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MediRescue AI</title>
+<style>
+:root{--bg:#f2f8fb;--card:#fff;--tx:#0f2a3d;--mut:#5b7285;--pri:#0b6bcb;--teal:#0d9488;--bd:#d5e3ec;--red:#c62828;--redbg:#fdecec;--warn:#fff6dd;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1a24;--card:#12283a;--tx:#e6f1f8;--mut:#9bb3c4;--pri:#5aa8ff;--teal:#2dd4bf;--bd:#244158;--red:#ff8a80;--redbg:#3a1a1a;--warn:#3a3114;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0b1a24;--card:#12283a;--tx:#e6f1f8;--mut:#9bb3c4;--pri:#5aa8ff;--teal:#2dd4bf;--bd:#244158;--red:#ff8a80;--redbg:#3a1a1a;--warn:#3a3114;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:1000px;margin:0 auto;padding:16px}
+h1,h2,h3{margin:.2em 0}.mut{color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin:12px 0}
+.btn{border:0;border-radius:12px;padding:12px 18px;font:600 16px inherit;font-family:inherit;cursor:pointer;background:var(--pri);color:#fff;min-height:46px}
+.btn.t{background:var(--teal);color:#04201c}.btn.o{background:transparent;color:var(--pri);border:2px solid var(--pri)}.btn.r{background:var(--red);color:#fff}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+input,select,textarea{width:100%;padding:12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit;margin:4px 0 8px}
+label{font-weight:600;font-size:14px}.err{color:var(--red);font-size:14px;min-height:18px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.hero{background:linear-gradient(135deg,#0b6bcb,#0d9488);color:#fff;border-radius:18px;padding:36px 20px;text-align:center}
+.hero .btn{margin:6px}.hero .btn.o{color:#fff;border-color:#fff}
+.nav{display:flex;gap:6px;overflow-x:auto;padding:8px 0;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
+.nav button{white-space:nowrap;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:20px;padding:9px 14px;font:inherit;cursor:pointer}
+.nav button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.chip{display:inline-block;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:18px;padding:8px 13px;margin:3px;cursor:pointer;font:inherit}
+.chip.on{background:var(--teal);color:#04201c;border-color:var(--teal)}
+.sos{background:var(--redbg);border:2px solid var(--red);color:var(--red);border-radius:12px;padding:12px;font-weight:600}
+.warn{background:var(--warn);border-radius:10px;padding:10px;font-size:14px}
+.tag{display:inline-block;font-size:12px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:2px 8px;margin:2px}
+.mic{width:130px;height:130px;border-radius:50%;font-size:48px;border:0;background:var(--pri);color:#fff;cursor:pointer;display:block;margin:10px auto}
+.mic.live{background:var(--red);animation:p 1s infinite}@keyframes p{50%{transform:scale(1.07)}}
+svg{width:100%;height:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px;touch-action:manipulation}
+svg text{fill:var(--tx);font:3px sans-serif}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.top{display:flex;justify-content:space-between;align-items:center}
+</style></head><body><div class="w" id="app"></div>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls={g(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},s(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const H=[
+{id:'h1',n:'Sample City General Hospital',a:'12 Demo Road',x:30,y:35,sv:['Emergency','General Medicine','Trauma Care','Pediatrics'],dr:'Dr. A. Rao (sample)'},
+{id:'h2',n:'Sample Heart Institute',a:'4 Example Avenue',x:72,y:22,sv:['Emergency','Cardiology'],dr:'Dr. S. Menon (sample)'},
+{id:'h3',n:'Demo Community Clinic',a:'88 Test Street',x:52,y:74,sv:['General Medicine','Pediatrics'],dr:'Dr. P. Iyer (sample)'},
+{id:'h4',n:'Example Trauma Centre',a:'7 Fictional Lane',x:82,y:64,sv:['Emergency','Trauma Care','Orthopedics'],dr:'Dr. K. Das (sample)'},
+{id:'h5',n:'Sample Lung & Chest Care',a:'21 Placeholder Rd',x:18,y:72,sv:['Emergency','Pulmonology'],dr:'Dr. N. Khan (sample)'}];
+const SV=['Emergency','Cardiology','General Medicine','Trauma Care','Pulmonology','Pediatrics','Orthopedics'];
+const km=(x,y)=>(Math.hypot(x-50,y-50)*.09).toFixed(1);
+let AM=[{id:'AMB-101',x:40,y:45,st:'Available'},{id:'AMB-102',x:65,y:40,st:'Available'},{id:'AMB-103',x:60,y:80,st:'Available'},{id:'AMB-104',x:25,y:60,st:'Available'}];
+const RULES=[
+{k:/breath|asthma|wheez|cough/,d:['Emergency','Pulmonology'],w:'breathing-related words'},
+{k:/chest|heart|palpitat/,d:['Emergency','Cardiology'],w:'chest/heart-related words'},
+{k:/injur|accident|fracture|bleed|wound|burn|fell|fall/,d:['Emergency','Trauma Care'],w:'injury-related words'},
+{k:/bone|fracture|joint/,d:['Orthopedics'],w:'bone/joint words'},
+{k:/fever|cold|vomit|headache|pain|infection|weak/,d:['General Medicine'],w:'general symptom words'},
+{k:/child|baby|kid|infant/,d:['Pediatrics'],w:'child-related words'}];
+const RED=/breath|chest|unconscious|bleed|stroke|seizure|faint|accident|heart/;
+const S={v:'welcome',tab:'home',f:[],sel:null,txt:'',res:null,loc:null,err:{},rec:null};
+let tm=null;
+const user=()=>ls.g('mr_cur',null);
+async function hash(p,salt){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(salt+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+const go=(v,t)=>{S.v=v;if(t)S.tab=t;render()};
+function render(){clearInterval(tm);const u=user();if(S.v==='dash'&&!u)S.v='signin';
+const m={welcome:welcome,signin:signin,signup:signup,dash:dash};$('#app').innerHTML=m[S.v]();if(S.v==='dash'){after();if(S.tab==='amb')tm=setInterval(tick,1500)}window.scrollTo(0,0)}
+function welcome(){return`<div class="hero"><div style="font-size:52px">🚑</div><h1>MediRescue AI</h1><p style="font-size:20px">Find the right emergency care, faster.</p>
+<button class="btn t" onclick="go(user()?'dash':'signup')">Get Started</button><button class="btn o" onclick="go('signin')">Sign In</button><button class="btn o" onclick="go('signup')">Sign Up</button></div>
+<div class="grid"><div class="card"><h3>🏥 Nearby hospitals</h3><p class="mut">Filter sample hospitals by department on a map.</p></div><div class="card"><h3>🎙️ Speak your problem</h3><p class="mut">Voice-to-text for people who find typing hard.</p></div><div class="card"><h3>🕸️ Knowledge graph</h3><p class="mut">Patient → Request → Need → Department → Hospital → Ambulance → Location.</p></div></div>
+<div class="warn">Demonstration project. Hospitals, ambulances and accounts are fictional sample data. This is not a medical service. In an emergency, call your local emergency number (India: 112 or 108).</div>`}
+function field(id,l,t,ph){return`<label for="${id}">${l}</label><input id="${id}" type="${t||'text'}" placeholder="${ph||''}" autocomplete="off"><div class="err" id="e_${id}"></div>`}
+function pw(id,l){return`<label for="${id}">${l}</label><div class="row"><input id="${id}" type="password" style="flex:1"><button class="btn o" type="button" onclick="const i=$('#${id}');i.type=i.type=='password'?'text':'password'">Show/Hide</button></div><div class="err" id="e_${id}"></div>`}
+function signup(){return`<div class="card"><button class="btn o" onclick="go('welcome')">← Back</button><h2>Create account</h2><div class="warn">Demo login: accounts are stored only in this browser (salted hash, no server). Use fictional details. Not production security.</div>
+${field('fn','Full name')}${field('em','Email','email')}${field('mb','Mobile number','tel','e.g. 9876543210')}${pw('p1','Password (8+ chars, letter and number)')}${pw('p2','Confirm password')}
+<div class="err" id="e_all"></div><button class="btn" onclick="doUp()">Sign Up</button> <button class="btn o" onclick="go('signin')">I have an account</button></div>`}
+function signin(){return`<div class="card"><button class="btn o" onclick="go('welcome')">← Back</button><h2>Sign in</h2><div class="warn">Demonstration login using browser-only storage. Fictional accounts only.</div>${field('em','Email','email')}${pw('p1','Password')}<div class="err" id="e_all"></div><button class="btn" onclick="doIn()">Sign In</button> <button class="btn o" onclick="go('signup')">Create account</button></div>`}
+const setE=o=>{document.querySelectorAll('.err').forEach(e=>e.textContent='');for(const k in o){const e=$('#e_'+k);if(e)e.textContent=o[k]}return Object.keys(o).length};
+async function doUp(){const v=i=>$('#'+i).value.trim(),e={};const fn=v('fn'),em=v('em').toLowerCase(),mb=v('mb').replace(/[\s-]/g,''),p=$('#p1').value,c=$('#p2').value;
+if(fn.length<2)e.fn='Please enter your full name.';if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))e.em='Enter a valid email like name@example.com.';if(!/^\+?\d{10,13}$/.test(mb))e.mb='Enter a 10–13 digit mobile number.';
+if(p.length<8||!/[a-z]/i.test(p)||!/\d/.test(p))e.p1='Use 8+ characters with at least one letter and one number.';if(p!==c)e.p2='Passwords do not match.';if(setE(e))return;
+const us=ls.g('mr_users',{});if(us[em]){setE({em:'This email is already registered. Try signing in.'});return}
+const salt=crypto.getRandomValues(new Uint32Array(2)).join('-');us[em]={fn,em,mb,salt,h:await hash(p,salt)};ls.s('mr_users',us);ls.s('mr_cur',{fn,em,mb});go('dash','home')}
+async function doIn(){const em=$('#em').value.trim().toLowerCase(),p=$('#p1').value,us=ls.g('mr_users',{}),u=us[em];
+if(!u||u.h!==await hash(p,u.salt)){setE({all:'Email or password is incorrect.'});return}ls.s('mr_cur',{fn:u.fn,em:u.em,mb:u.mb});go('dash','home')}
+function out(){ls.s('mr_cur',null);S.res=null;go('welcome')}
+const TABS=[['home','🏠 Home'],['hosp','🏥 Hospitals'],['amb','🚑 Ambulances'],['voice','🎙️ Speak'],['type','⌨️ Type'],['graph','🕸️ Graph'],['res','📞 Resources'],['prof','👤 Profile']];
+function dash(){const u=user();return`<div class="top"><h2>🚑 MediRescue AI</h2><button class="btn o" onclick="out()">Sign out</button></div>
+<div class="sos">🚨 Need help right now? Contact your local emergency service directly (India: 112 / ambulance 108). Do not wait for this website.</div>
+<div class="nav">${TABS.map(t=>`<button class="${S.tab===t[0]?'on':''}" onclick="go('dash','${t[0]}')">${t[1]}</button>`).join('')}</div><div id="tab">${tabs[S.tab]()}</div>`}
+const tabs={
+home(){const r=ls.g('mr_rec_'+user().em,[]);return`<h3>Hello, ${esc(user().fn)}</h3><div class="grid">${TABS.slice(1,7).map(t=>`<button class="card btn o" style="text-align:left" onclick="go('dash','${t[0]}')">${t[1]}</button>`).join('')}</div>
+<div class="card"><h3>Recent searches</h3>${r.length?r.map(x=>`<div>• ${esc(x.t)} <span class="mut">(${esc(x.d)})</span></div>`).join('')+'<br><button class="btn o" onclick="ls.s(\'mr_rec_\'+user().em,[]);render()">Clear history</button>':'<p class="mut">No searches yet. Try “Speak” or “Type”.</p>'}</div>`},
+hosp(){const list=H.filter(h=>!S.f.length||S.f.every(f=>h.sv.includes(f)));return`<div class="card"><h3>Nearby hospitals (sample map)</h3><div class="warn">Sample, fictional locations — not live data and not positioned from your real location. Availability is unknown.</div>
+<p><button class="btn t" onclick="getLoc()">📍 Use my location</button> <a class="btn o" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="https://www.google.com/maps/search/hospitals+near+me">Open real hospitals in external map</a></p><div id="lm" class="mut">${S.loc||''}</div>
+<div>${SV.map(s=>`<button class="chip ${S.f.includes(s)?'on':''}" onclick="S.f=S.f.includes('${s}')?S.f.filter(x=>x!='${s}'):[...S.f,'${s}'];S.sel=null;render()">${s}</button>`).join('')}</div>
+${map(list,[])}<div id="det">${S.sel?det(S.sel):'<p class="mut">Tap a hospital pin for details.</p>'}</div>${list.length?'':'<p>No sample hospital matches all selected filters. Remove a filter.</p>'}</div>`},
+amb(){return`<div class="card"><h3>Ambulance tracking — SIMULATION</h3><div class="warn">Simulated ambulances only. No real GPS feed; nothing here dispatches a real ambulance.</div>${map(H,AM)}
+<p><button class="btn r" onclick="demoReq()">Run demo emergency request</button></p><div id="al">${ambList()}</div></div>`},
+voice(){return`<div class="card"><h3>Speak Your Problem</h3><label for="lg">Language</label><select id="lg"><option value="en-IN">English (India)</option><option value="ta-IN">தமிழ் Tamil</option><option value="hi-IN">हिन्दी Hindi</option><option value="en-US">English (US)</option></select>
+<div class="warn">Privacy: your browser’s built-in speech recognition turns speech into text. In many browsers (e.g. Chrome) the audio is sent to the browser vendor’s servers to do this. This app does not record or store audio. Press Start only if you agree.</div>
+<button id="mic" class="mic" aria-label="Start speaking" onclick="startV()">🎤</button><p id="vs" class="mut" style="text-align:center">Tap the microphone and describe the problem.</p>
+<div class="row"><button class="btn t" onclick="startV()">Start Speaking</button><button class="btn o" onclick="stopV()">Stop</button><button class="btn o" onclick="S.txt='';$('#vt').value=''">Clear</button><button class="btn" onclick="submitTxt('voice')">Submit</button></div>
+<label for="vt">Recognised text (edit if needed)</label><textarea id="vt" rows="4" oninput="S.txt=this.value">${esc(S.txt)}</textarea><p class="mut">Can’t use voice? Use the “Type” tab.</p></div>${resBox()}`},
+type(){const c=['Breathing difficulty','Injury','Fever','Chest discomfort','General medical help','Child unwell'];return`<div class="card"><h3>Type Your Problem</h3><div>${c.map(x=>`<button class="chip" onclick="addC('${x}')">${x}</button>`).join('')}</div>
+<label for="vt">Describe what’s happening</label><textarea id="vt" rows="6" style="font-size:18px" oninput="S.txt=this.value">${esc(S.txt)}</textarea><button class="btn" onclick="submitTxt('typed')">Find care options</button></div>${resBox()}`},
+graph(){return`<div class="card"><h3>Knowledge graph</h3><p class="mut">Tap any node. Sample graph data (no graph database connected).</p>${graphSvg()}<div id="gi" class="card">Select a node.</div></div>`},
+res(){return`<div class="card"><h3>Emergency resources</h3><div class="sos">Call your local emergency service immediately for life-threatening situations.</div><ul><li>India: <b>112</b> national emergency, <b>108</b> ambulance (check your state)</li><li>Elsewhere: use your country’s emergency number</li><li>Keep a list of medicines and allergies ready</li><li>Share your exact location with the operator</li><li>Don’t drive yourself if you feel faint or have chest pain</li></ul><a class="btn o" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="https://www.google.com/maps/search/pharmacy+near+me">Find pharmacies on external map</a></div>`},
+prof(){const u=user();return`<div class="card"><h3>Profile</h3><p><b>Name:</b> ${esc(u.fn)}<br><b>Email:</b> ${esc(u.em)}<br><b>Mobile:</b> ${esc(u.mb)}</p><p class="mut">Demo account stored in this browser only.</p><button class="btn r" onclick="out()">Sign out</button></div>`}};
+function map(hs,am){const f=SV;return`<svg viewBox="0 0 100 100" role="img" aria-label="Schematic sample map"><g stroke="var(--bd)" stroke-width=".3">${[20,40,60,80].map(n=>`<line x1="${n}" y1="0" x2="${n}" y2="100"/><line x1="0" y1="${n}" x2="100" y2="${n}"/>`).join('')}</g>
+<circle cx="50" cy="50" r="2.2" fill="#2563eb"/><text x="53" y="51">You (demo)</text>
+${hs.map(h=>`<g onclick="S.sel='${h.id}';${S.tab==='hosp'?'$(\'#det\').innerHTML=det(\''+h.id+'\')':''}" style="cursor:pointer"><circle cx="${h.x}" cy="${h.y}" r="3.4" fill="${S.sel===h.id?'#f59e0b':'#0d9488'}"/><text x="${h.x-1}" y="${h.y+1.2}" style="fill:#fff;font-size:3.4px">+</text><text x="${h.x-8}" y="${h.y+7}">${esc(h.n.split(' ').slice(0,3).join(' '))}</text></g>`).join('')}
+${am.map(a=>`<g><rect x="${a.x-2}" y="${a.y-2}" width="4" height="4" fill="${a.st==='Available'?'#16a34a':a.st==='Assigned'?'#f59e0b':'#dc2626'}"/><text x="${a.x-4}" y="${a.y-3}">${a.id}</text></g>`).join('')}</svg>`}
+function det(id){const h=H.find(x=>x.id===id);return`<div class="card"><b>${esc(h.n)}</b> <span class="tag">SAMPLE</span><br>${esc(h.a)} · ~${km(h.x,h.y)} km (simulated)<br>Phone: not listed (sample)<br>${h.sv.map(s=>`<span class="tag">${s}</span>`).join('')}<br><a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(h.n+' '+h.a)}">Get directions in external map</a></div>`}
+function getLoc(){const m=$('#lm');if(!navigator.geolocation){m.textContent='Location is not supported here. Use the external map button.';return}
+m.textContent='Waiting for your permission…';navigator.geolocation.getCurrentPosition(p=>{S.loc=`Location received (${p.coords.latitude.toFixed(3)}, ${p.coords.longitude.toFixed(3)}). Sample hospitals below are fictional; use the external map for real ones.`;m.textContent=S.loc},e=>{m.textContent=e.code===1?'Permission denied. You can still browse sample data or use the external map.':'Could not get location. Try the external map button.'},{timeout:10000})}
+function ambList(){return AM.map(a=>`<div class="card"><b>${a.id}</b> <span class="tag">${a.st}</span> ${a.tg?`→ ${esc(H.find(h=>h.id===a.tg).n)} · ETA ~${Math.max(1,Math.round(Math.hypot(a.x-a.tx,a.y-a.ty)*.8))} min (simulated)`:''}</div>`).join('')}
+function demoReq(){const a=AM.find(x=>x.st==='Available');if(!a){alert('All demo ambulances are busy.');return}const h=S.res?H.find(x=>x.id===S.res.h[0].h.id):H[0];Object.assign(a,{st:'Assigned',tg:h.id,tx:h.x,ty:h.y});$('#al').innerHTML=ambList();setTimeout(()=>{a.st='En Route';if(S.tab==='amb')$('#al').innerHTML=ambList()},1500)}
+function tick(){AM.forEach(a=>{if(a.st==='En Route'){const dx=a.tx-a.x,dy=a.ty-a.y,d=Math.hypot(dx,dy);if(d<2){a.st='Available';delete a.tg}else{a.x+=dx/d*3;a.y+=dy/d*3}}});if(S.tab==='amb'){$('#tab').innerHTML=tabs.amb()}}
+function addC(x){S.txt=(S.txt?S.txt+'. ':'')+x;$('#vt').value=S.txt}
+let rc=null;
+function startV(){const R=window.SpeechRecognition||window.webkitSpeechRecognition,s=$('#vs');if(!R){s.textContent='Speech recognition isn’t supported in this browser. Please use the Type tab (Chrome or Edge on Android work best).';return}
+if(rc)rc.stop();rc=new R();S.lang=$('#lg').value;rc.lang=S.lang;rc.interimResults=true;rc.continuous=true;const base=S.txt;
+rc.onstart=()=>{$('#mic').classList.add('live');s.textContent='Listening… speak clearly.'};
+rc.onresult=e=>{let t='';for(const r of e.results)t+=r[0].transcript;S.txt=(base?base+' ':'')+t;$('#vt').value=S.txt};
+rc.onerror=e=>{const m={'not-allowed':'Microphone permission was denied. Allow it in your browser settings or use the Type tab.','no-speech':'We didn’t hear anything. Reduce background noise and try again.','network':'Speech service unreachable. Check your connection or type instead.','audio-capture':'No microphone found.'};s.textContent=m[e.error]||'Recognition failed ('+e.error+'). Please try again or type.'};
+rc.onend=()=>{$('#mic')&&$('#mic').classList.remove('live')};try{rc.start()}catch(e){s.textContent='Already listening.'}}
+function stopV(){if(rc)rc.stop();const s=$('#vs');if(s)s.textContent='Stopped. Review and edit the text, then Submit.'}
+function submitTxt(src){const t=S.txt.trim();if(t.length<3){alert('Please say or type a few words about the problem first.');return}
+if(rc)rc.stop();const l=t.toLowerCase(),sc={},why={};RULES.forEach(r=>{if(r.k.test(l))r.d.forEach(d=>{sc[d]=(sc[d]||0)+1;(why[d]=why[d]||[]).push(r.w)})});
+if(!Object.keys(sc).length){sc['General Medicine']=1;why['General Medicine']=['no specific keywords found (default)']}
+const ds=Object.keys(sc).sort((a,b)=>sc[b]-sc[a]);
+const hs=H.map(h=>{const m=ds.filter(d=>h.sv.includes(d));return{h,m,s:m.reduce((a,d)=>a+sc[d],0)}}).filter(x=>x.s).sort((a,b)=>b.s-a.s||km(a.h.x,a.h.y)-km(b.h.x,b.h.y));
+S.res={ds,why,h:hs,red:RED.test(l),t};const r=ls.g('mr_rec_'+user().em,[]);r.unshift({t:t.slice(0,60),d:new Date().toLocaleString()});ls.s('mr_rec_'+user().em,r.slice(0,5));render()}
+function resBox(){const r=S.res;if(!r)return'';return`<div class="card">${r.red?'<div class="sos">🚨 Your words may describe a serious situation. Call your local emergency service NOW (India: 112 / 108). Don’t wait for this website.</div>':''}
+<p><button class="btn t" onclick="speakRes()">🔊 Read aloud</button> <button class="btn o" onclick="speechSynthesis.cancel()">Stop reading</button></p><h3>Suggested departments</h3><div class="warn">Rule-based navigation suggestions from keyword matching — not a medical diagnosis. No AI model is used.</div>
+${r.ds.map(d=>`<p><span class="tag">${d}</span> matched because of ${[...new Set(r.why[d])].join(', ')}</p>`).join('')}
+<h3>Matching sample hospitals</h3>${r.h.map(x=>`<div class="card"><b>${esc(x.h.n)}</b> <span class="tag">SAMPLE</span> ~${km(x.h.x,x.h.y)} km<br>Why: offers ${x.m.join(', ')}<br><a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(x.h.n+' '+x.h.a)}">Directions</a></div>`).join('')}</div>`}
+const GN=[['pt','Patient','#2563eb',8,50,'The person seeking care (you).'],['rq','Emergency Request','#dc2626',22,25,'A submitted request; here: '],['nd','Medical Need','#f59e0b',36,50,'Needs inferred by keyword rules.'],['dp','Hospital Department','#0d9488',50,25,'Departments such as Cardiology.'],['hp','Hospital','#7c3aed',64,50,'Sample hospitals in the dataset.'],['am','Ambulance','#16a34a',78,25,'Simulated ambulances (AMB-101…104).'],['lc','Location','#64748b',92,50,'Simulated map coordinates.'],['dr','Doctors','#0891b2',64,82,'Sample doctors: '],['sv','Medical Services','#db2777',50,82,'Services: '],['rs','Emergency Resources','#ea580c',22,82,'112 / 108 and external maps.']];
+const GE=[['pt','rq'],['rq','nd'],['nd','dp'],['dp','hp'],['hp','am'],['am','lc'],['hp','dr'],['hp','sv'],['rq','rs'],['sv','dp']];
+function graphSvg(){const P=Object.fromEntries(GN.map(n=>[n[0],n]));return`<svg viewBox="0 0 100 100" style="aspect-ratio:1.3"><g stroke="var(--mut)" stroke-width=".5">${GE.map(e=>`<line x1="${P[e[0]][3]}" y1="${P[e[0]][4]}" x2="${P[e[1]][3]}" y2="${P[e[1]][4]}"/>`).join('')}</g>${GN.map(n=>`<g onclick="gi('${n[0]}')" style="cursor:pointer"><circle cx="${n[3]}" cy="${n[4]}" r="5.5" fill="${n[2]}"/><text x="${n[3]}" y="${n[4]+9}" text-anchor="middle" style="font-size:3px">${n[1]}</text></g>`).join('')}</svg>`}
+function gi(k){const n=GN.find(x=>x[0]===k);let x=n[5];if(k==='rq')x+=S.res?'“'+esc(S.res.t.slice(0,50))+'”':'none submitted yet.';if(k==='nd'&&S.res)x+=' Current: '+S.res.ds.join(', ');if(k==='dr')x+=H.map(h=>h.dr).join('; ');if(k==='sv')x+=SV.join(', ');if(k==='hp')x+=' '+H.map(h=>h.n).join('; ');
+$('#gi').innerHTML=`<b style="color:${n[2]}">● ${n[1]}</b><br>${x}<br><span class="mut">Connected to: ${GE.filter(e=>e.includes(k)).map(e=>GN.find(g=>g[0]===(e[0]===k?e[1]:e[0]))[1]).join(', ')}</span>`}
+function speakRes(){const r=S.res;if(!('speechSynthesis' in window)){alert('Reading aloud isn’t supported in this browser.');return}speechSynthesis.cancel();
+const t=(r.red?'This may be serious. Call your local emergency service now. ':'')+'Suggested departments: '+r.ds.join(', ')+'. '+(r.h[0]?'Closest matching sample hospital: '+r.h[0].h.n+'. ':'')+'These are navigation suggestions, not a medical diagnosis.';
+const u=new SpeechSynthesisUtterance(t);u.lang=S.lang||'en-IN';u.rate=.95;u.onerror=()=>alert('No voice available for this language on your device.');speechSynthesis.speak(u)}
+function after(){}
+render();
+</script></body></html>
